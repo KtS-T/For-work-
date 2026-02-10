@@ -18,6 +18,45 @@ class Растения:
         self.Влажность = Влажность
         self.Освещённость = Освещённость
         self.ПЭ = ПЭ
+        self.gui_refs = {}
+
+    # -----------------------------------------------------------------------------
+    def set_graphics(self, canvas, images, sky_id, wall_id, plant_id, curtains_id):
+        self.canvas = canvas
+        self.images = images
+        self.sky_id = sky_id
+        self.wall_id = wall_id
+        self.plant_id = plant_id
+        self.curtains_id = curtains_id
+    # -----------------------------------------------------------------------------
+    def Uqdate_V(self):
+        # --Небо------------------------------
+        sky_map = {'Утро': 'небо_у', 'День': 'небо_д', 'Вечер': 'небо_в', 'Ночь': 'небо_н'}
+        img_name = sky_map.get(Ttime, 'небо_н')
+        self.canvas.itemconfig(self.sky_id, image=self.images[img_name])
+        wall_map = {
+            'Утро': 'стены_с',
+            'День': 'стены_д',
+            'Вечер': 'стены_с',
+             'Ночь': 'стены_н'
+        }
+        wall_img = wall_map.get(Ttime, 'стены_н')
+        self.canvas.itemconfig(self.wall_id, image=self.images[wall_img])
+        # --Шторы-------------------------------------------------------------
+        if Шторы == 0:
+            self.canvas.itemconfig(self.wall_id, image=self.images['стены_н'])
+        else:
+            self.canvas.itemconfig(self.wall_id, image=self.images[wall_img])
+        curt_img = 'Шторы_з' if Шторы == 0 else 'Шторы_о'
+        self.canvas.itemconfig(self.curtains_id, image=self.images[curt_img])
+        # --Растение-----------------------------------------------------------
+        if (60 > self.Влажность >= 50) or (60 > self.Освещённость >= 50) or (0 >= self.Влажность > -10) or (0 >= self.Освещённость > -10):
+            self.canvas.itemconfig(self.plant_id, image=self.images['растение_норм'])
+        elif (self.Влажность >= 60) or (self.Освещённость >= 60) or (self.Влажность <= -10) or (self.Освещённость <= -10):
+            self.canvas.itemconfig(self.plant_id, image=self.images['растение_дед'])
+        else:
+            self.canvas.itemconfig(self.plant_id, image=self.images['растение_ок'])
+
     # ----------------------------- Обновление данных -----------------------------
     def Update (self):
         from Mein import Lb1, Lb2, Lb3, Lb6
@@ -69,9 +108,12 @@ class Растения:
             else:
                 self.Освещённость -= 1
             # ---------------------------------
+            self.Uqdate_V()
             self.Update()
             print(Ttime, Gtime)
             print(Шторы)
+            #--------------------------------------------------------------------
+
             # ----------------------- Проверка смертности -----------------------
             if (60 > self.Влажность >= 50) or (60 > self.Освещённость >= 50) or (0 >= self.Влажность > -10) or (0 >= self.Освещённость > -10):
                 Lb5.config(text='Статус: Аааа.. Плохо!', fg='orange')
@@ -95,10 +137,9 @@ class Растения:
             Лейка += 10
             # -------------------
             Lb4.config(text = f'В Лейке : {Лейка} литров')
-
+        # -------------------
         for btn in Bt:
             btn.config(state=NORMAL)
-
     # ----------------------------------------------------------------------------
     def Долить_2 (self):
         global L
@@ -115,7 +156,6 @@ class Растения:
             self.Влажность += 10
             Lb4.config(text=f'В Лейке : {Лейка} литров')
             print(self.Влажность)
-
         # ------------------------
         else:
             pass
